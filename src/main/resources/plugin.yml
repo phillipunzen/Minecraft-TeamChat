@@ -1,0 +1,16 @@
+name: TeamChat
+version: '1.0'
+authors: [ Blackiiiii ]
+main: de.phillipunzen.teamChat.TeamChat
+api-version: '1.21'
+website: www.phillipunzen.de
+prefix: TeamChat
+commands:
+  tc:
+    description: Use the Teamchat Plugin
+    usage: /tc <chat>
+    permission: teamchat.use
+permissions:
+  teamchat.use:
+    description: Use and Receive TeamChat Messages
+    default: op
