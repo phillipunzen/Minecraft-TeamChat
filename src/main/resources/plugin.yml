@@ -1,5 +1,5 @@
 name: TeamChat
-version: '1.0'
+version: '1.1'
 authors: [ Blackiiiii ]
 main: de.phillipunzen.teamChat.TeamChat
 api-version: '1.21'
@@ -9,8 +9,8 @@ commands:
   tc:
     description: Use the Teamchat Plugin
     usage: /tc <chat>
-    permission: teamchat.use
+    permission: tc.use
 permissions:
-  teamchat.use:
+  tc.use:
     description: Use and Receive TeamChat Messages
     default: op
