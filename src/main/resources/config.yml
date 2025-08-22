@@ -1,0 +1,8 @@
+# TeamChat Konfiguration
+# Verfügbare Farben: Verwende &-Farbcodes (z.B. &a, &b, &f, &3, etc.)
+# Beispiel: &3[&9Team-Chat&3] ergibt einen blauen Prefix-Rahmen mit dunkelblauem Titel.
+chat:
+  prefix: "&3[&9Team-Chat&3]"
+  nameColor: "&f"
+  messageColor: "&f"
+

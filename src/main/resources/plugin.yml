@@ -10,7 +10,14 @@ commands:
     description: Use the Teamchat Plugin
     usage: /tc <chat>
     permission: tc.use
+  tcreload:
+    description: Reload TeamChat configuration
+    usage: /tcreload
+    permission: tc.admin
 permissions:
   tc.use:
     description: Use and Receive TeamChat Messages
+    default: op
+  tc.admin:
+    description: Reload the TeamChat configuration
     default: op

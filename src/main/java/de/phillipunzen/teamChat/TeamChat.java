@@ -1,13 +1,18 @@
 package de.phillipunzen.teamChat;
 
 import de.phillipunzen.teamChat.Commands.TC;
+import de.phillipunzen.teamChat.Commands.TCReload;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class TeamChat extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        this.getCommand("tc").setExecutor(new TC());
+        // Lade/erstelle Standard-Konfiguration
+        this.saveDefaultConfig();
+        // Registriere Befehle
+        this.getCommand("tc").setExecutor(new TC(this));
+        this.getCommand("tcreload").setExecutor(new TCReload(this));
         this.getLogger().info("[TeamChat] Plugin enabled");
         this.getLogger().info("[TeamChat] Author: Phillip Unzen (Blackiiiii)");
     }
