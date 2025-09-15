@@ -1,7 +1,6 @@
 package de.phillipunzen.teamChat.Commands;
 
 import de.phillipunzen.teamChat.TeamChat;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -36,17 +35,28 @@ public class TC implements CommandExecutor {
                     String nameColorRaw = plugin.getConfig().getString("chat.nameColor", "&f");
                     String messageColorRaw = plugin.getConfig().getString("chat.messageColor", "&f");
 
-                    String prefix = ChatColor.translateAlternateColorCodes('&', prefixRaw);
-                    String nameColor = ChatColor.translateAlternateColorCodes('&', nameColorRaw);
-                    String messageColor = ChatColor.translateAlternateColorCodes('&', messageColorRaw);
+                    String prefix = org.bukkit.ChatColor.translateAlternateColorCodes('&', prefixRaw);
+                    String nameColor = org.bukkit.ChatColor.translateAlternateColorCodes('&', nameColorRaw);
+                    String messageColor = org.bukkit.ChatColor.translateAlternateColorCodes('&', messageColorRaw);
 
-                    for (Player p : Bukkit.getOnlinePlayers())
-                    {
-                        if(p.hasPermission("tc.use"))
+                    final String msgToSend = prefix + ChatColor.RESET + " " + nameColor + sender.getName() + ChatColor.RESET + ": " + messageColor + message + ChatColor.RESET;
+
+                    // Auf dem Haupt-Thread senden (kompatibel mit Paper/Folia)
+                    plugin.getServer().getScheduler().runTask(plugin, () -> {
+                        for (Player p : plugin.getServer().getOnlinePlayers())
                         {
-                            p.sendMessage(prefix + ChatColor.RESET + " " + nameColor + sender.getName() + ChatColor.RESET + ": " + messageColor + message + ChatColor.RESET);
+                            if(p.hasPermission("tc.use"))
+                            {
+                                p.sendMessage(msgToSend);
+                            }
                         }
+                    });
+
+                    // Publish via Redis, falls aktiviert
+                    if (plugin.getConfig().getBoolean("redis.enabled", false) && plugin.getRedisManager() != null) {
+                        plugin.getRedisManager().publish(msgToSend);
                     }
+
                     return true;
                 } else {
                     sender.sendMessage(ChatColor.RED + "Du hast keine Berechtigung, diesen Befehl zu nutzen.");

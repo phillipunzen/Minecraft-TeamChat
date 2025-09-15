@@ -1,5 +1,8 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     java
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "de.phillipunzen"
@@ -25,11 +28,17 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.6-R0.1-SNAPSHOT")
+    implementation("redis.clients:jedis:4.4.3")
+    implementation("com.google.code.gson:gson:2.10.1")
 }
 
-// Ressourcen (plugin.yml, config.yml) werden standardmäßig eingebunden
-// tasks.processResources { from("src/main/resources") }
-
-tasks.jar {
+// ShadowJar konfigurieren (Kotlin-DSL korrekt)
+tasks.withType<ShadowJar>().configureEach {
     archiveBaseName.set("TeamChat")
+    mergeServiceFiles()
+}
+
+// Deaktiviere das Standard-JAR, damit Shadow das Fat-JAR erzeugt
+tasks.named("jar") {
+    enabled = false
 }

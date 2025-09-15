@@ -5,6 +5,7 @@ main: de.phillipunzen.teamChat.TeamChat
 api-version: '1.21'
 website: www.phillipunzen.de
 prefix: TeamChat
+folia-supported: true
 commands:
   tc:
     description: Use the Teamchat Plugin

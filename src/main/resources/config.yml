@@ -6,3 +6,22 @@ chat:
   nameColor: "&f"
   messageColor: "&f"
 
+# Redis-Integration (für Server-Netzwerke wie Velocity)
+# Aktivieren: redis.enabled: true
+# Channel: muss auf allen beteiligten Servern gleich sein
+redis:
+  enabled: false
+  host: "127.0.0.1"
+  port: 6379
+  password: ""   # leer lassen, falls kein Passwort
+  channel: "teamchat"
+
+# Sonstige Einstellungen
+settings:
+  # Ob der Plugin-Log join/leave Nachrichten anzeigen soll (nur Beispiel)
+  showStartupInfo: true
+
+# Hinweise:
+# - Farben werden mit ChatColor.translateAlternateColorCodes('&', value) verarbeitet.
+# - /tcreload lädt diese config.yml neu (Benötigt Berechtigung: tc.admin).
+# - Standardberechtigungen: tc.use und tc.admin sind auf op gesetzt (siehe plugin.yml).
