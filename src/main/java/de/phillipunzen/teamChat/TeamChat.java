@@ -2,6 +2,8 @@ package de.phillipunzen.teamChat;
 
 import de.phillipunzen.teamChat.Commands.TC;
 import de.phillipunzen.teamChat.Commands.TCReload;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class TeamChat extends JavaPlugin {
@@ -10,44 +12,80 @@ public final class TeamChat extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Lade/erstelle Standard-Konfiguration
-        this.saveDefaultConfig();
+        saveDefaultConfig();
+        setupRedis();
 
-        // Redis initialisieren, wenn aktiviert
-        if (this.getConfig().getBoolean("redis.enabled", false)) {
-            this.redisManager = new RedisManager(this,
-                    this.getConfig().getString("redis.host", "127.0.0.1"),
-                    this.getConfig().getInt("redis.port", 6379),
-                    this.getConfig().getString("redis.password", null),
-                    this.getConfig().getString("redis.channel", "teamchat"));
-            this.redisManager.startSubscriber(msg -> {
-                // Beim Empfang von Redis-Nachrichten: auf Haupt-Thread verteilen
-                this.getServer().getScheduler().runTask(this, () -> {
-                    for (org.bukkit.entity.Player p : this.getServer().getOnlinePlayers()) {
-                        if (p.hasPermission("tc.use")) {
-                            p.sendMessage(msg);
-                        }
-                    }
-                });
-            });
-        }
+        getCommand("tc").setExecutor(new TC(this));
+        getCommand("tcreload").setExecutor(new TCReload(this));
 
-        // Registriere Befehle
-        this.getCommand("tc").setExecutor(new TC(this));
-        this.getCommand("tcreload").setExecutor(new TCReload(this));
-        this.getLogger().info("[TeamChat] Plugin enabled");
-        this.getLogger().info("[TeamChat] Author: Phillip Unzen (Blackiiiii)");
+        getLogger().info("[TeamChat] Plugin enabled");
+        getLogger().info("[TeamChat] Author: Phillip Unzen (Blackiiiii)");
     }
 
     @Override
     public void onDisable() {
-        if (this.redisManager != null) {
-            this.redisManager.shutdown();
-        }
-        this.getLogger().info("[TeamChat] Plugin disabled");
+        shutdownRedis();
+        getLogger().info("[TeamChat] Plugin disabled");
+    }
+
+    public void reloadTeamChat() {
+        reloadConfig();
+        shutdownRedis();
+        setupRedis();
     }
 
     public RedisManager getRedisManager() {
-        return this.redisManager;
+        return redisManager;
+    }
+
+    private void setupRedis() {
+        if (!getConfig().getBoolean("redis.enabled", false)) {
+            getLogger().info("Redis-Integration ist deaktiviert.");
+            return;
+        }
+
+        String host = getConfig().getString("redis.host", "127.0.0.1");
+        int port = getConfig().getInt("redis.port", 6379);
+        String password = getConfig().getString("redis.password", null);
+        String channel = getConfig().getString("redis.channel", "teamchat");
+        String serverName = getConfig().getString("redis.serverName", "unknown-server");
+
+        redisManager = new RedisManager(this, host, port, password, channel, serverName);
+        redisManager.startSubscriber(payload ->
+                getServer().getScheduler().runTask(this, () -> {
+                    String formatted = formatMessage(payload.getSender(), payload.getMessage(), payload.getServerName());
+                    for (Player player : getServer().getOnlinePlayers()) {
+                        if (player.hasPermission("tc.use")) {
+                            player.sendMessage(formatted);
+                        }
+                    }
+                })
+        );
+    }
+
+    private void shutdownRedis() {
+        if (redisManager != null) {
+            redisManager.shutdown();
+            redisManager = null;
+        }
+    }
+
+    public String formatMessage(String sender, String message, String sourceServer) {
+        String prefixRaw = getConfig().getString("chat.prefix", "&3[&9Team-Chat&3]");
+        String nameColorRaw = getConfig().getString("chat.nameColor", "&f");
+        String messageColorRaw = getConfig().getString("chat.messageColor", "&f");
+        String serverTagColorRaw = getConfig().getString("chat.serverTagColor", "&8");
+
+        String prefix = ChatColor.translateAlternateColorCodes('&', prefixRaw);
+        String nameColor = ChatColor.translateAlternateColorCodes('&', nameColorRaw);
+        String messageColor = ChatColor.translateAlternateColorCodes('&', messageColorRaw);
+        String serverTagColor = ChatColor.translateAlternateColorCodes('&', serverTagColorRaw);
+
+        String serverTag = "";
+        if (sourceServer != null && !sourceServer.isBlank()) {
+            serverTag = " " + serverTagColor + "[" + sourceServer + "]" + ChatColor.RESET;
+        }
+
+        return prefix + ChatColor.RESET + serverTag + " " + nameColor + sender + ChatColor.RESET + ": " + messageColor + message + ChatColor.RESET;
     }
 }
