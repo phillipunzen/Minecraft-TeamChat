@@ -21,7 +21,7 @@ public class TCReload implements CommandExecutor {
             sender.sendMessage(ChatColor.RED + "Du hast keine Berechtigung, diesen Befehl zu nutzen.");
             return true;
         }
-        plugin.reloadConfig();
+        plugin.reloadTeamChat();
         sender.sendMessage(ChatColor.GREEN + "TeamChat-Konfiguration wurde neu geladen.");
         return true;
     }

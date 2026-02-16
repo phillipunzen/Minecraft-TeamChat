@@ -1,27 +1,19 @@
 # TeamChat Konfiguration
 # Verfügbare Farben: Verwende &-Farbcodes (z.B. &a, &b, &f, &3, etc.)
-# Beispiel: &3[&9Team-Chat&3] ergibt einen blauen Prefix-Rahmen mit dunkelblauem Titel.
 chat:
   prefix: "&3[&9Team-Chat&3]"
   nameColor: "&f"
   messageColor: "&f"
+  serverTagColor: "&8"
 
-# Redis-Integration (für Server-Netzwerke wie Velocity)
-# Aktivieren: redis.enabled: true
-# Channel: muss auf allen beteiligten Servern gleich sein
+# Redis-Integration für Netzwerkbetrieb (z.B. hinter einem Velocity-Proxy)
 redis:
   enabled: false
   host: "127.0.0.1"
   port: 6379
-  password: ""   # leer lassen, falls kein Passwort
+  password: ""   # leer lassen, falls kein Passwort verwendet wird
   channel: "teamchat"
+  serverName: "lobby-1" # eindeutiger Name dieser Instanz (z.B. lobby-1, survival-2)
 
-# Sonstige Einstellungen
 settings:
-  # Ob der Plugin-Log join/leave Nachrichten anzeigen soll (nur Beispiel)
   showStartupInfo: true
-
-# Hinweise:
-# - Farben werden mit ChatColor.translateAlternateColorCodes('&', value) verarbeitet.
-# - /tcreload lädt diese config.yml neu (Benötigt Berechtigung: tc.admin).
-# - Standardberechtigungen: tc.use und tc.admin sind auf op gesetzt (siehe plugin.yml).

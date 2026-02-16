@@ -16,54 +16,41 @@ public class TC implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args)
-    {
-        if(label.equalsIgnoreCase("tc"))
-        {
-            if(sender instanceof Player)
-            {
-                if(sender.hasPermission("tc.use"))
-                {
-                    if(args.length == 0)
-                    {
-                        sender.sendMessage(ChatColor.RED + "Gebe eine Nachricht hinter /tc ein.");
-                        return true;
-                    }
-                    String message = String.join(" ", args);
-                    // Werte aus der Konfiguration holen und Farb-Codes (&) übersetzen
-                    String prefixRaw = plugin.getConfig().getString("chat.prefix", "&3[&9Team-Chat&3]");
-                    String nameColorRaw = plugin.getConfig().getString("chat.nameColor", "&f");
-                    String messageColorRaw = plugin.getConfig().getString("chat.messageColor", "&f");
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (!label.equalsIgnoreCase("tc")) {
+            return false;
+        }
 
-                    String prefix = org.bukkit.ChatColor.translateAlternateColorCodes('&', prefixRaw);
-                    String nameColor = org.bukkit.ChatColor.translateAlternateColorCodes('&', nameColorRaw);
-                    String messageColor = org.bukkit.ChatColor.translateAlternateColorCodes('&', messageColorRaw);
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.RED + "Dieser Befehl kann nur von Spielern ausgeführt werden.");
+            return true;
+        }
 
-                    final String msgToSend = prefix + ChatColor.RESET + " " + nameColor + sender.getName() + ChatColor.RESET + ": " + messageColor + message + ChatColor.RESET;
+        if (!sender.hasPermission("tc.use")) {
+            sender.sendMessage(ChatColor.RED + "Du hast keine Berechtigung, diesen Befehl zu nutzen.");
+            return true;
+        }
 
-                    // Auf dem Haupt-Thread senden (kompatibel mit Paper/Folia)
-                    plugin.getServer().getScheduler().runTask(plugin, () -> {
-                        for (Player p : plugin.getServer().getOnlinePlayers())
-                        {
-                            if(p.hasPermission("tc.use"))
-                            {
-                                p.sendMessage(msgToSend);
-                            }
-                        }
-                    });
+        if (args.length == 0) {
+            sender.sendMessage(ChatColor.RED + "Gebe eine Nachricht hinter /tc ein.");
+            return true;
+        }
 
-                    // Publish via Redis, falls aktiviert
-                    if (plugin.getConfig().getBoolean("redis.enabled", false) && plugin.getRedisManager() != null) {
-                        plugin.getRedisManager().publish(msgToSend);
-                    }
+        String rawMessage = String.join(" ", args);
+        String formattedMessage = plugin.formatMessage(sender.getName(), rawMessage, null);
 
-                    return true;
-                } else {
-                    sender.sendMessage(ChatColor.RED + "Du hast keine Berechtigung, diesen Befehl zu nutzen.");
-                    return true;
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            for (Player player : plugin.getServer().getOnlinePlayers()) {
+                if (player.hasPermission("tc.use")) {
+                    player.sendMessage(formattedMessage);
                 }
             }
+        });
+
+        if (plugin.getConfig().getBoolean("redis.enabled", false) && plugin.getRedisManager() != null) {
+            plugin.getRedisManager().publish(sender.getName(), rawMessage);
         }
-        return false;
+
+        return true;
     }
 }
